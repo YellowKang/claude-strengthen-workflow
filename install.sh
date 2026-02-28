@@ -33,7 +33,10 @@ echo "    ✓ skills/ 全部安装完成"
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 MARKER="## 编码规范自动加载"
 
-if grep -q "$MARKER" "$CLAUDE_MD" 2>/dev/null; then
+if [ ! -f "$CLAUDE_MD" ]; then
+    cp "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_MD"
+    echo "--> ✓ 已创建 $CLAUDE_MD"
+elif grep -q "$MARKER" "$CLAUDE_MD" 2>/dev/null; then
     echo "--> CLAUDE.md 中已有工作流规则，跳过（如需更新请手动替换）"
 else
     echo "" >> "$CLAUDE_MD"
@@ -47,4 +50,4 @@ echo ""
 echo "    已安装内容："
 echo "    - agents: reviewer / debugger / designer"
 echo "    - skills: $(ls "$SCRIPT_DIR/skills/" | grep -v '^_' | wc -l | tr -d ' ') 个技术规范"
-echo "    - CLAUDE.md: 编码规范自动加载 + 变更影响范围"
+echo "    - CLAUDE.md: 编码规范自动加载 + 变更影响范围 + 任务并行执行"
