@@ -44,11 +44,22 @@ echo "    ✓ 已删除 $removed 个 skill 目录"
 # 3. 清理 CLAUDE.md 中的追加内容
 echo "--> 清理 CLAUDE.md..."
 if [ -f "$CLAUDE_MD" ] && grep -q "$BEGIN_MARKER" "$CLAUDE_MD" 2>/dev/null; then
-    sed -i.bak "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
-    rm -f "$CLAUDE_MD.bak"
-    # 清理末尾空行
-    sed -i.bak -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$CLAUDE_MD"
-    rm -f "$CLAUDE_MD.bak"
+    # 兼容 macOS (BSD sed) 和 Linux (GNU sed)
+    if sed --version >/dev/null 2>&1; then
+        # GNU sed
+        sed -i "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
+    else
+        # BSD sed (macOS)
+        sed -i '' "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
+    fi
+    # 清理末尾多余空行（兼容 macOS/Linux）
+    while [ "$(tail -c 2 "$CLAUDE_MD" | wc -l)" -gt 1 ] 2>/dev/null; do
+        if sed --version >/dev/null 2>&1; then
+            sed -i '${/^$/d}' "$CLAUDE_MD"
+        else
+            sed -i '' '${/^$/d}' "$CLAUDE_MD"
+        fi
+    done
     echo "    ✓ 已清理 CLAUDE.md 中的工作流规则"
 else
     echo "    - CLAUDE.md 中未找到工作流标记，跳过"

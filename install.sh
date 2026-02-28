@@ -59,9 +59,12 @@ if [ ! -f "$CLAUDE_MD" ]; then
     echo "    ✓ 已创建 $CLAUDE_MD"
 elif grep -q "$BEGIN_MARKER" "$CLAUDE_MD" 2>/dev/null; then
     # 已有标记，替换为最新版
-    # 删除旧标记段，追加新的
-    sed -i.bak "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
-    rm -f "$CLAUDE_MD.bak"
+    # 删除旧标记段，追加新的（兼容 macOS/Linux）
+    if sed --version >/dev/null 2>&1; then
+        sed -i "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
+    else
+        sed -i '' "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
+    fi
     {
         echo ""
         echo "$BEGIN_MARKER"
