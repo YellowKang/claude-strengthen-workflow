@@ -1,20 +1,10 @@
 ## 编码规范自动加载
-**仅在实际动手写/改代码前触发**（讨论、分析、看代码不触发），根据涉及文件类型用 Read 加载对应规范，只加载命中的，同一会话内同语言只加载一次：
-
-**前端**（统一追加 `ui-ue-guidelines`）：
-- 涉及 `.vue` → `~/.claude/skills/vue-conventions/SKILL.md` + `~/.claude/skills/frontend-conventions/SKILL.md` + `~/.claude/skills/ui-ue-guidelines/SKILL.md`
-- 涉及 `.tsx/.jsx` → `~/.claude/skills/react-conventions/SKILL.md` + `~/.claude/skills/frontend-conventions/SKILL.md` + `~/.claude/skills/ui-ue-guidelines/SKILL.md`
-
-**后端**：
-- 涉及 `.go` → `~/.claude/skills/go-conventions/SKILL.md` + `~/.claude/skills/backend-conventions/SKILL.md`
-- 涉及 `.java` → `~/.claude/skills/java-conventions/SKILL.md` + `~/.claude/skills/backend-conventions/SKILL.md`
-- 涉及 `.py` → `~/.claude/skills/python-conventions/SKILL.md` + `~/.claude/skills/backend-conventions/SKILL.md`
-- 涉及 `.rs` → `~/.claude/skills/rust-conventions/SKILL.md` + `~/.claude/skills/backend-conventions/SKILL.md`
-
-**按需追加**：
-- 涉及表设计/API → 额外加 `~/.claude/skills/db-api-design/SKILL.md`
-- 涉及测试 → 额外加 `~/.claude/skills/testing-strategy/SKILL.md`
-- 涉及部署/Docker → 额外加 `~/.claude/skills/docker-deploy/SKILL.md`
+## 编码规范自动加载
+**仅在实际动手写/改代码前触发**（讨论、分析、看代码不触发），同一会话内同语言只加载一次：
+1. 读取 `~/.claude/skills/_common/skill-packs.md`
+2. 根据涉及的文件类型匹配对应 pack
+3. 用 Read 加载 pack 中列出的 skill 文件（只加载命中的，不全量加载）
+4. 涉及表设计/API/测试/Docker 等场景时，追加通用 pack 中对应的 skill
 
 ## 变更影响范围
 每次改动前，主动评估跨端影响，不只改当前文件：
