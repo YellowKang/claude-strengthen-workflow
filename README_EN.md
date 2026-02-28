@@ -123,15 +123,23 @@ Verified: `tag.go` (22s) + `Tags.vue` (67s) launched simultaneously, total 67s v
 
 ## Installation
 
+**macOS / Linux:**
 ```bash
 git clone git@github.com:YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
+**Windows (PowerShell):**
+```powershell
+git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+cd claude-strengthen-workflow
+.\install.ps1
+```
+
 Restart Claude Code to take effect.
 
-> `install.sh` appends to your existing `~/.claude/CLAUDE.md` rather than overwriting. Prompts before overwriting existing agents.
+> The install script appends to (not overwrites) your existing `~/.claude/CLAUDE.md`, wrapped with markers for clean uninstall. Existing agents and skills with different content will prompt before overwriting.
 
 ---
 
@@ -149,9 +157,12 @@ Restart Claude Code to take effect.
 
 ## Uninstall
 
+**macOS / Linux:**
 ```bash
-rm ~/.claude/agents/{reviewer,debugger,designer}.md
-# Remove skill directories as needed
-rm -rf ~/.claude/skills/go-conventions
-# ...
+bash uninstall.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\uninstall.ps1
 ```

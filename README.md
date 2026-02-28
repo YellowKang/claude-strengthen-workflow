@@ -123,15 +123,23 @@
 
 ## 安装
 
+**macOS / Linux：**
 ```bash
 git clone git@github.com:YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
+**Windows (PowerShell)：**
+```powershell
+git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+cd claude-strengthen-workflow
+.\install.ps1
+```
+
 重新打开 Claude Code 即可生效。
 
-> `install.sh` 追加而非覆盖已有的 `~/.claude/CLAUDE.md`，agents 同名文件会提示是否覆盖。
+> 安装脚本会追加而非覆盖已有的 `~/.claude/CLAUDE.md`（用标记包裹，支持干净卸载）。agents 和 skills 同名文件会提示是否覆盖。
 
 ---
 
@@ -149,9 +157,12 @@ bash install.sh
 
 ## 卸载
 
+**macOS / Linux：**
 ```bash
-rm ~/.claude/agents/{reviewer,debugger,designer}.md
-# skills 按需删除对应目录
-rm -rf ~/.claude/skills/go-conventions
-# ...
+bash uninstall.sh
+```
+
+**Windows (PowerShell)：**
+```powershell
+.\uninstall.ps1
 ```
