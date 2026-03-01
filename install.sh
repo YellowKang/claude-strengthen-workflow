@@ -13,6 +13,24 @@ END_MARKER="# <<< claude-strengthen-workflow <<<"
 echo "==> 安装 Claude Strengthen Workflow"
 echo ""
 
+# 0. 备份已有文件
+BACKUP_DIR="$CLAUDE_DIR/.backup/$(date +%Y%m%d_%H%M%S)"
+need_backup=false
+
+[ -d "$CLAUDE_DIR/agents" ] && need_backup=true
+[ -d "$CLAUDE_DIR/skills" ] && need_backup=true
+[ -f "$CLAUDE_MD" ] && need_backup=true
+
+if $need_backup; then
+    echo "--> 备份已有文件到 $BACKUP_DIR ..."
+    mkdir -p "$BACKUP_DIR"
+    [ -d "$CLAUDE_DIR/agents" ] && cp -r "$CLAUDE_DIR/agents" "$BACKUP_DIR/agents" && echo "    ✓ agents/"
+    [ -d "$CLAUDE_DIR/skills" ] && cp -r "$CLAUDE_DIR/skills" "$BACKUP_DIR/skills" && echo "    ✓ skills/"
+    [ -f "$CLAUDE_MD" ] && cp "$CLAUDE_MD" "$BACKUP_DIR/CLAUDE.md" && echo "    ✓ CLAUDE.md"
+    echo "    备份完成"
+    echo ""
+fi
+
 # 1. 创建目录
 mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/skills"
 
@@ -46,44 +64,10 @@ for dir in "$SCRIPT_DIR/skills/"*/; do
 done
 echo "    ✓ 安装 $installed 个 skill，跳过 $skipped 个"
 
-# 4. 追加 CLAUDE.md（用标记包裹，支持干净卸载）
+# 4. 覆盖 CLAUDE.md（已在步骤 0 备份）
 echo "--> 配置 CLAUDE.md..."
-if [ ! -f "$CLAUDE_MD" ]; then
-    # 全新安装
-    {
-        echo "$BEGIN_MARKER"
-        cat "$SCRIPT_DIR/CLAUDE.md"
-        echo ""
-        echo "$END_MARKER"
-    } > "$CLAUDE_MD"
-    echo "    ✓ 已创建 $CLAUDE_MD"
-elif grep -q "$BEGIN_MARKER" "$CLAUDE_MD" 2>/dev/null; then
-    # 已有标记，替换为最新版
-    # 删除旧标记段，追加新的（兼容 macOS/Linux）
-    if sed --version >/dev/null 2>&1; then
-        sed -i "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
-    else
-        sed -i '' "/$BEGIN_MARKER/,/$END_MARKER/d" "$CLAUDE_MD"
-    fi
-    {
-        echo ""
-        echo "$BEGIN_MARKER"
-        cat "$SCRIPT_DIR/CLAUDE.md"
-        echo ""
-        echo "$END_MARKER"
-    } >> "$CLAUDE_MD"
-    echo "    ✓ 已更新工作流规则（替换旧版本）"
-else
-    # 首次追加
-    {
-        echo ""
-        echo "$BEGIN_MARKER"
-        cat "$SCRIPT_DIR/CLAUDE.md"
-        echo ""
-        echo "$END_MARKER"
-    } >> "$CLAUDE_MD"
-    echo "    ✓ 工作流规则已追加到 CLAUDE.md"
-fi
+cp "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_MD"
+echo "    ✓ 已覆盖 $CLAUDE_MD"
 
 echo ""
 echo "==> 安装完成！重新打开 Claude Code 即可生效。"
@@ -93,4 +77,7 @@ echo "    - 3 个 agents: reviewer / debugger / designer"
 echo "    - $installed 个 skills"
 echo "    - CLAUDE.md 工作规则"
 echo ""
+if $need_backup; then
+    echo "    备份位置: $BACKUP_DIR"
+fi
 echo "    卸载: bash $(basename "$0" | sed 's/install/uninstall/')"
