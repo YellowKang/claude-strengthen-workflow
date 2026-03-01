@@ -125,21 +125,21 @@ Verified: `tag.go` (22s) + `Tags.vue` (67s) launched simultaneously, total 67s v
 
 **macOS / Linux:**
 ```bash
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone git@github.com:martin98ksJ/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone git@github.com:martin98ksJ/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 .\install.ps1
 ```
 
 Restart Claude Code to take effect.
 
-> The install script appends to (not overwrites) your existing `~/.claude/CLAUDE.md`, wrapped with markers for clean uninstall. Existing agents and skills with different content will prompt before overwriting.
+> The install script automatically backs up existing `~/.claude/` files (agents/, skills/, CLAUDE.md) to `~/.claude/.backup/<timestamp>/` before overwriting. Existing agents and skills with different content will prompt before overwriting.
 
 ---
 

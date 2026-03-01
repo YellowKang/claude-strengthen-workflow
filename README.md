@@ -125,21 +125,21 @@
 
 **macOS / Linux：**
 ```bash
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone git@github.com:martin98ksJ/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
 **Windows (PowerShell)：**
 ```powershell
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone git@github.com:martin98ksJ/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 .\install.ps1
 ```
 
 重新打开 Claude Code 即可生效。
 
-> 安装脚本会追加而非覆盖已有的 `~/.claude/CLAUDE.md`（用标记包裹，支持干净卸载）。agents 和 skills 同名文件会提示是否覆盖。
+> 安装脚本会先自动备份已有的 `~/.claude/` 文件（agents/、skills/、CLAUDE.md）到 `~/.claude/.backup/<时间戳>/`，然后覆盖安装。agents 和 skills 同名文件会提示是否覆盖。
 
 ---
 
