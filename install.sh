@@ -34,40 +34,49 @@ fi
 # 1. 创建目录
 mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/skills"
 
-# 2. 安装 agents
+# 2. 安装 agents（已备份，直接覆盖）
 echo "--> 安装 agents..."
 for f in "$SCRIPT_DIR/agents/"*.md; do
     name=$(basename "$f")
-    if [ -f "$CLAUDE_DIR/agents/$name" ]; then
-        read -r -p "    agents/$name 已存在，覆盖? [y/N] " ans
-        [[ "$ans" =~ ^[Yy]$ ]] || { echo "    - 跳过 agents/$name"; continue; }
-    fi
     cp "$f" "$CLAUDE_DIR/agents/$name"
     echo "    ✓ agents/$name"
 done
 
-# 3. 安装 skills（同名提示，新增直接复制）
+# 3. 安装 skills（已备份，直接覆盖）
 echo "--> 安装 skills..."
 installed=0
-skipped=0
 for dir in "$SCRIPT_DIR/skills/"*/; do
     name=$(basename "$dir")
-    if [ -d "$CLAUDE_DIR/skills/$name" ]; then
-        # 已有同名 skill，比较内容
-        if ! diff -rq "$dir" "$CLAUDE_DIR/skills/$name" >/dev/null 2>&1; then
-            read -r -p "    skills/$name/ 已存在且内容不同，覆盖? [y/N] " ans
-            [[ "$ans" =~ ^[Yy]$ ]] || { skipped=$((skipped+1)); continue; }
-        fi
-    fi
     cp -r "$dir" "$CLAUDE_DIR/skills/$name"
     installed=$((installed+1))
 done
-echo "    ✓ 安装 $installed 个 skill，跳过 $skipped 个"
+echo "    ✓ 安装 $installed 个 skill"
 
-# 4. 覆盖 CLAUDE.md（已在步骤 0 备份）
+# 4. 追加 CLAUDE.md 工作流规则
 echo "--> 配置 CLAUDE.md..."
-cp "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_MD"
-echo "    ✓ 已覆盖 $CLAUDE_MD"
+srcContent=$(cat "$SCRIPT_DIR/CLAUDE.md")
+
+if [ ! -f "$CLAUDE_MD" ]; then
+    printf '%s\n%s\n%s\n' "$BEGIN_MARKER" "$srcContent" "$END_MARKER" > "$CLAUDE_MD"
+    echo "    ✓ 已创建 CLAUDE.md"
+elif grep -qF "$BEGIN_MARKER" "$CLAUDE_MD"; then
+    # 已有标记，替换旧版本
+    # 用 awk 删除旧标记块
+    awk -v bm="$BEGIN_MARKER" -v em="$END_MARKER" '
+        $0 == bm { skip=1; next }
+        $0 == em { skip=0; next }
+        !skip { print }
+    ' "$CLAUDE_MD" > "$CLAUDE_MD.tmp"
+    # 去除末尾空行后追加新内容
+    sed -i'' -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$CLAUDE_MD.tmp" 2>/dev/null || true
+    printf '\n\n%s\n%s\n%s\n' "$BEGIN_MARKER" "$srcContent" "$END_MARKER" >> "$CLAUDE_MD.tmp"
+    mv "$CLAUDE_MD.tmp" "$CLAUDE_MD"
+    echo "    ✓ 已更新工作流规则（替换旧版本）"
+else
+    # 首次追加
+    printf '\n%s\n%s\n%s\n' "$BEGIN_MARKER" "$srcContent" "$END_MARKER" >> "$CLAUDE_MD"
+    echo "    ✓ 工作流规则已追加到 CLAUDE.md"
+fi
 
 echo ""
 echo "==> 安装完成！重新打开 Claude Code 即可生效。"
@@ -80,4 +89,4 @@ echo ""
 if $need_backup; then
     echo "    备份位置: $BACKUP_DIR"
 fi
-echo "    卸载: bash $(basename "$0" | sed 's/install/uninstall/')"
+echo "    卸载: bash uninstall.sh"

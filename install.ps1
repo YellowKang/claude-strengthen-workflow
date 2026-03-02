@@ -42,43 +42,25 @@ if ($needBackup) {
 New-Item -ItemType Directory -Path "$ClaudeDir\agents" -Force | Out-Null
 New-Item -ItemType Directory -Path "$ClaudeDir\skills" -Force | Out-Null
 
-# 2. 安装 agents
+# 2. 安装 agents（已备份，直接覆盖）
 Write-Host "--> 安装 agents..."
 foreach ($f in Get-ChildItem "$ScriptDir\agents\*.md") {
     $dest = Join-Path "$ClaudeDir\agents" $f.Name
-    if (Test-Path $dest) {
-        $ans = Read-Host "    $($f.Name) 已存在，覆盖? [y/N]"
-        if ($ans -notmatch "^[Yy]$") {
-            Write-Host "    - 跳过 $($f.Name)"
-            continue
-        }
-    }
     Copy-Item $f.FullName $dest -Force
     Write-Host "    ✓ agents/$($f.Name)" -ForegroundColor Green
 }
 
-# 3. 安装 skills
+# 3. 安装 skills（已备份，直接覆盖）
 Write-Host "--> 安装 skills..."
 $installed = 0
-$skipped = 0
 foreach ($dir in Get-ChildItem "$ScriptDir\skills" -Directory) {
     $dest = Join-Path "$ClaudeDir\skills" $dir.Name
-    if (Test-Path $dest) {
-        $diff = Compare-Object (Get-ChildItem $dir.FullName -Recurse -File | Get-FileHash) (Get-ChildItem $dest -Recurse -File | Get-FileHash) -Property Hash -ErrorAction SilentlyContinue
-        if ($diff) {
-            $ans = Read-Host "    skills/$($dir.Name)/ 已存在且内容不同，覆盖? [y/N]"
-            if ($ans -notmatch "^[Yy]$") {
-                $skipped++
-                continue
-            }
-        }
-    }
     Copy-Item $dir.FullName $dest -Recurse -Force
     $installed++
 }
-Write-Host "    ✓ 安装 $installed 个 skill，跳过 $skipped 个" -ForegroundColor Green
+Write-Host "    ✓ 安装 $installed 个 skill" -ForegroundColor Green
 
-# 4. 配置 CLAUDE.md
+# 4. 追加 CLAUDE.md 工作流规则
 Write-Host "--> 配置 CLAUDE.md..."
 $srcContent = Get-Content "$ScriptDir\CLAUDE.md" -Raw
 
