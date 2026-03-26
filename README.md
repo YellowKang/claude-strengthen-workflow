@@ -125,14 +125,14 @@
 
 **macOS / Linux：**
 ```bash
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone https://github.com/YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
 **Windows (PowerShell)：**
 ```powershell
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone https://github.com/YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 .\install.ps1
 ```

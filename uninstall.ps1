@@ -2,6 +2,8 @@
 # 用法: .\uninstall.ps1
 
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 $ClaudeMD = Join-Path $ClaudeDir "CLAUDE.md"

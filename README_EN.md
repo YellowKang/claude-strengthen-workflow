@@ -125,14 +125,14 @@ Verified: `tag.go` (22s) + `Tags.vue` (67s) launched simultaneously, total 67s v
 
 **macOS / Linux:**
 ```bash
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone https://github.com/YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 bash install.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-git clone git@github.com:YellowKang/claude-strengthen-workflow.git
+git clone https://github.com/YellowKang/claude-strengthen-workflow.git
 cd claude-strengthen-workflow
 .\install.ps1
 ```
