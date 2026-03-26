@@ -1,4 +1,4 @@
-# Claude Strengthen Workflow 卸载脚本 (Windows PowerShell)
+﻿# Claude Strengthen Workflow 卸载脚本 (Windows PowerShell)
 # 用法: .\uninstall.ps1
 
 $ErrorActionPreference = "Stop"
@@ -46,11 +46,11 @@ Write-Host "    ✓ 已删除 $removed 个 skill 目录" -ForegroundColor Green
 
 # 3. 清理 CLAUDE.md
 Write-Host "--> 清理 CLAUDE.md..."
-if ((Test-Path $ClaudeMD) -and ((Get-Content $ClaudeMD -Raw) -match [regex]::Escape($BeginMarker))) {
-    $content = Get-Content $ClaudeMD -Raw
+if ((Test-Path $ClaudeMD) -and ((Get-Content $ClaudeMD -Raw -Encoding UTF8) -match [regex]::Escape($BeginMarker))) {
+    $content = Get-Content $ClaudeMD -Raw -Encoding UTF8
     $pattern = "(?s)" + [regex]::Escape($BeginMarker) + ".*?" + [regex]::Escape($EndMarker)
     $content = ($content -replace $pattern, "").TrimEnd() + "`n"
-    $content | Set-Content $ClaudeMD -Encoding UTF8
+    [System.IO.File]::WriteAllText($ClaudeMD, $content, [System.Text.UTF8Encoding]::new($false))
     Write-Host "    ✓ 已清理 CLAUDE.md 中的工作流规则" -ForegroundColor Green
 }
 else {

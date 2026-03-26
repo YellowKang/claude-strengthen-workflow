@@ -1,4 +1,4 @@
-# Claude Strengthen Workflow 安装脚本 (Windows PowerShell)
+﻿# Claude Strengthen Workflow 安装脚本 (Windows PowerShell)
 # 用法: .\install.ps1
 
 $ErrorActionPreference = "Stop"
@@ -10,6 +10,14 @@ $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 $ClaudeMD = Join-Path $ClaudeDir "CLAUDE.md"
 $BeginMarker = "# >>> claude-strengthen-workflow >>>"
 $EndMarker = "# <<< claude-strengthen-workflow <<<"
+
+# 检查执行策略
+$policy = Get-ExecutionPolicy
+if ($policy -eq 'Restricted' -or $policy -eq 'AllSigned') {
+    Write-Host "[警告] 当前执行策略为 $policy，若脚本被阻止请先运行：" -ForegroundColor Yellow
+    Write-Host "    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Yellow
+    Write-Host ""
+}
 
 Write-Host "==> 安装 Claude Strengthen Workflow" -ForegroundColor Cyan
 Write-Host ""
@@ -40,8 +48,8 @@ $skipped = 0
 foreach ($dir in Get-ChildItem "$ScriptDir\skills" -Directory) {
     $dest = Join-Path "$ClaudeDir\skills" $dir.Name
     if (Test-Path $dest) {
-        $diff = Compare-Object (Get-ChildItem $dir.FullName -Recurse -File | Get-FileHash) `
-                               (Get-ChildItem $dest -Recurse -File | Get-FileHash) `
+        $diff = Compare-Object (Get-ChildItem $dir.FullName -Recurse -File | Where-Object { $_.Name -ne '.DS_Store' } | Get-FileHash) `
+                               (Get-ChildItem $dest -Recurse -File | Where-Object { $_.Name -ne '.DS_Store' } | Get-FileHash) `
                                -Property Hash -ErrorAction SilentlyContinue
         if ($diff) {
             $ans = Read-Host "    skills/$($dir.Name)/ 已存在且内容不同，覆盖? [y/N]"
@@ -51,32 +59,46 @@ foreach ($dir in Get-ChildItem "$ScriptDir\skills" -Directory) {
             }
         }
     }
-    Copy-Item $dir.FullName $dest -Recurse -Force
+    New-Item -ItemType Directory -Path $dest -Force | Out-Null
+    Get-ChildItem -Path $dir.FullName -Recurse | Where-Object { $_.Name -notmatch '^\.DS_Store$' } | ForEach-Object {
+        $target = $_.FullName.Replace($dir.FullName, $dest)
+        if ($_.PSIsContainer) {
+            New-Item -ItemType Directory -Path $target -Force | Out-Null
+        } else {
+            Copy-Item $_.FullName $target -Force
+        }
+    }
     $installed++
 }
 Write-Host "    ✓ 安装 $installed 个 skill，跳过 $skipped 个" -ForegroundColor Green
 
 # 4. 配置 CLAUDE.md
 Write-Host "--> 配置 CLAUDE.md..."
-$srcContent = Get-Content "$ScriptDir\CLAUDE.md" -Raw
+$srcContent = Get-Content "$ScriptDir\CLAUDE.md" -Raw -Encoding UTF8
+
+# 兼容 PS5/PS7 的无 BOM UTF-8 写入函数
+function Write-UTF8NoBOM {
+    param([string]$Path, [string]$Content)
+    [System.IO.File]::WriteAllText($Path, $Content, [System.Text.UTF8Encoding]::new($false))
+}
 
 if (-not (Test-Path $ClaudeMD)) {
     # 全新安装
-    "$BeginMarker`n$srcContent`n$EndMarker" | Set-Content $ClaudeMD -Encoding UTF8
+    Write-UTF8NoBOM $ClaudeMD ($BeginMarker + "`n" + $srcContent + "`n" + $EndMarker + "`n")
     Write-Host "    ✓ 已创建 CLAUDE.md" -ForegroundColor Green
 }
-elseif ((Get-Content $ClaudeMD -Raw) -match [regex]::Escape($BeginMarker)) {
+elseif ((Get-Content $ClaudeMD -Raw -Encoding UTF8) -match [regex]::Escape($BeginMarker)) {
     # 已有标记，替换
-    $content = Get-Content $ClaudeMD -Raw
+    $content = Get-Content $ClaudeMD -Raw -Encoding UTF8
     $pattern = "(?s)" + [regex]::Escape($BeginMarker) + ".*?" + [regex]::Escape($EndMarker)
-    $content = $content -replace $pattern, ""
-    $content = $content.TrimEnd() + "`n`n$BeginMarker`n$srcContent`n$EndMarker`n"
-    $content | Set-Content $ClaudeMD -Encoding UTF8
+    $content = ($content -replace $pattern, "").TrimEnd() + "`n`n" + $BeginMarker + "`n" + $srcContent + "`n" + $EndMarker + "`n"
+    Write-UTF8NoBOM $ClaudeMD $content
     Write-Host "    ✓ 已更新工作流规则（替换旧版本）" -ForegroundColor Green
 }
 else {
     # 首次追加
-    Add-Content $ClaudeMD "`n$BeginMarker`n$srcContent`n$EndMarker" -Encoding UTF8
+    $content = (Get-Content $ClaudeMD -Raw -Encoding UTF8).TrimEnd() + "`n`n" + $BeginMarker + "`n" + $srcContent + "`n" + $EndMarker + "`n"
+    Write-UTF8NoBOM $ClaudeMD $content
     Write-Host "    ✓ 工作流规则已追加到 CLAUDE.md" -ForegroundColor Green
 }
 
