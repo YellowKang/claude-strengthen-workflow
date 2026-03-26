@@ -1,0 +1,11 @@
+# 统一换行符，避免 Windows 上 git clone 将 LF 转为 CRLF 导致脚本解析失败
+* text=auto eol=lf
+
+# PowerShell 脚本强制 LF
+*.ps1 text eol=lf
+
+# Shell 脚本强制 LF
+*.sh text eol=lf
+
+# Markdown 强制 LF
+*.md text eol=lf
